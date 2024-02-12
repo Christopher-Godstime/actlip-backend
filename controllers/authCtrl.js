@@ -106,21 +106,26 @@ const authCtrl = {
       const rf_token = req.cookies.refreshtoken;
       if (!rf_token) return res.status(400).json({ msg: "Please login now." });
 
-      jwt.verify(rf_token, "myrefreshtokensecret", async (err, result) => {
-        if (err) return res.status(400).json({ msg: "Please login now." });
+      jwt.verify(
+        rf_token,
+        process.env.REFRESH_TOKEN_SECRET,
+        async (err, result) => {
+          if (err) return res.status(400).json({ msg: "Please login now." });
 
-        console.log(result);
-        const user = await Users.findById(result.id).select("-password");
+          console.log(result);
+          const user = await Users.findById(result.id).select("-password");
 
-        if (!user) return res.status(400).json({ msg: "This does not exist" });
+          if (!user)
+            return res.status(400).json({ msg: "This does not exist" });
 
-        const access_token = createAccessToken({ id: result.id });
+          const access_token = createAccessToken({ id: result.id });
 
-        res.json({
-          access_token,
-          user,
-        });
-      });
+          res.json({
+            access_token,
+            user,
+          });
+        }
+      );
     } catch (err) {
       return res.Status(500).json({ msg: err.message });
     }
@@ -128,13 +133,13 @@ const authCtrl = {
 };
 
 const createAccessToken = (payload) => {
-  return jwt.sign(payload, "myaccesstokensecret", {
+  return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "1d",
   });
 };
 
 const createRefreshToken = (payload) => {
-  return jwt.sign(payload, "myrefreshtokensecret", {
+  return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: "30d",
   });
 };
