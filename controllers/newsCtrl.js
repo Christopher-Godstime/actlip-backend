@@ -58,6 +58,24 @@ const newsCtrl = {
     }
   },
 
+  viewPosts: async (req, res) => {
+    try {
+      const features = new APIfeatures(Posts.find({}), req.query).paginating();
+      const posts = await features.query.sort("-createdAt");
+      const totalPosts = await Posts.countDocuments(); // Get total number of posts
+      const totalPages = Math.ceil(totalPosts / req.query.limit);
+
+      res.json({
+        msg: "Success!",
+        result: posts.length,
+        posts,
+        totalPages,
+      });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
   updatePost: async (req, res) => {
     try {
       const { head, content, images } = req.body;
@@ -97,9 +115,24 @@ const newsCtrl = {
     }
   },
 
+  viewPost: async (req, res) => {
+    try {
+      const post = await Posts.findById(req.params.id);
+
+      if (!post)
+        return res.status(400).json({ msg: "This post deos not exist" });
+
+      res.json({ post });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
   deletePost: async (req, res) => {
     try {
-      const post = await Posts.findOneAndDelete({});
+      const post = await Posts.findOneAndDelete({
+        _id: req.params.id,
+      });
 
       res.json({
         msg: "Deleted post!",
