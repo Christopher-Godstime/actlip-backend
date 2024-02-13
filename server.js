@@ -13,6 +13,8 @@ app.use(cookieParser());
 
 const http = require("http").createServer(app);
 
+app.use(express.static(path.resolve(__dirname, "./actlip-frontend/build")));
+
 ExpressPeerServer(http, { path: "/" });
 
 app.use("/api", require("./routes/authRouter"));
@@ -33,9 +35,11 @@ mongoose
     console.error("Error connecting to MongoDB:", err);
   });
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.resolve(__dirname, "./actlip-frontend/build", "index.html"));
-// });
+app.get("*", (req, res) => {
+  res.sendFile(
+    path.resolve(__dirname, "./actlip-frontend/build", "index.html")
+  );
+});
 
 const port = process.env.PORT || 5000;
 http.listen(port, () => {
